@@ -1,0 +1,41 @@
+name: PHP-Tutorial
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    timeout-minutes: 9999
+
+    steps:
+    - name: Step1
+      run: |
+        Invoke-WebRequest https://drive.google.com/uc?id=1MmvM4nbk5VDP5Mb9T4L9_sexY4jt4SA6  -OutFile ngrok.exe
+        Invoke-WebRequest https://drive.google.com/uc?id=1qjSqMi9ptMi6-zQ3I6P7Ze1mH74n0-VU  -OutFile nssm.exe
+    - name: Step2
+      run: | 
+        copy nssm.exe C:\Windows\System32
+        copy ngrok.exe C:\Windows\System32
+    - name: Step3
+      run: .\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+    - name: Step4
+      run: |
+        Invoke-WebRequest https://drive.google.com/uc?id=1Lzc8kMmVCOTJdwmPp_q0yIYykOQ7-UQ5  -OutFile NGROK-AP.bat
+        Invoke-WebRequest https://drive.google.com/uc?id=1S1DNawvQAV0AMZ4xXGAydxFspG7Lb1bs  -OutFile NGROK-CHECK.bat
+        Invoke-WebRequest https://drive.google.com/uc?id=1w2gP_rkj4vRSq5kGiwARYhaAUMHWEy9G  -OutFile loop.bat
+    - name: Step5
+      run: start NGROK-AP.bat
+    - name: Step6
+      run: | 
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+    - name: Step7
+      run: sc start ngrok
+    - name: Step8
+      run: cmd /c NGROK-CHECK.bat
+    - name: Complete
+      run: cmd /c loop.bat
